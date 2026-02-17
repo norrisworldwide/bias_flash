@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Biases Flashcards - TOK</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .flashcard-front {
+            background: white;
+        }
+
+        .flashcard-back {
+            background: #f8f9fa;
+            transform: rotateY(180deg);
+        }
+
+        .bias-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bias-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            text-align: center;
+        }
+
+        .tap-instruction {
+            font-size: 0.9rem;
+            color: #999;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-prev, .btn-next {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-prev:hover, .btn-next:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn-shuffle {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-shuffle:hover {
+            background: #5a3980;
+            transform: translateY(-2px);
+        }
+
+        .progress {
+            text-align: center;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 10px 25px;
+            font-size: 1rem;
+            border: 2px solid white;
+            border-radius: 8px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-btn.active:hover {
+            background: white;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            min-height: 400px;
+            display: none;
+        }
+
+        .quiz-container.active {
+            display: block;
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-option {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            background: white;
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .quiz-option.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .quiz-option.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .quiz-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .quiz-feedback {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.correct {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .quiz-feedback.incorrect {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .quiz-score {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .quiz-next-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .quiz-next-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .quiz-next-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .wrong-answers-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .wrong-answers-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #c62828;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .wrong-answer-item {
+            background: #fff3f3;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+        }
+
+        .wrong-answer-name {
+            font-weight: bold;
+            color: #c62828;
+            margin-bottom: 5px;
+        }
+
+        .wrong-answer-description {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .retest-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .retest-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        .perfect-score-message {
+            text-align: center;
+            color: #4caf50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .flashcard {
+                height: 350px;
+            }
+
+            .bias-name {
+                font-size: 1.5rem;
+            }
+
+            .bias-description {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cognitive Biases for TOK</h1>
+            <p>Click cards to flip • Use buttons to navigate</p>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="study-mode-btn">📚 Study Mode</button>
+            <button class="mode-btn" id="quiz-mode-btn">✏️ Quiz Mode</button>
+        </div>
+
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-face flashcard-front">
+                    <div class="bias-name" id="bias-name"></div>
+                    <div class="tap-instruction">Tap to see definition</div>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <div class="bias-description" id="bias-description"></div>
+                    <div class="tap-instruction">Tap to see name</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-container" id="quiz-container">
+            <div class="quiz-question" id="quiz-question"></div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+            <button class="quiz-next-btn" id="quiz-next-btn" style="display: none;">Next Question</button>
+            <div id="wrong-answers-list"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-prev" id="prev-btn">← Previous</button>
+            <button class="btn-shuffle" id="shuffle-btn">🔀 Shuffle</button>
+            <button class="btn-next" id="next-btn">Next →</button>
+        </div>
+
+        <div class="progress" id="progress"></div>
+        <div class="quiz-score" id="quiz-score" style="display: none;"></div>
+    </div>
+
+    <script>
+        const biases = [
+            {
+                name: "Confirmation Bias",
+                description: "We tend to seek out and favor information that confirms our existing beliefs while dismissing contradictory evidence. This affects how we construct knowledge claims and evaluate evidence."
+            },
+            {
+                name: "Availability Heuristic",
+                description: "We judge the likelihood of events based on how easily examples come to mind, often influenced by recent or vivid experiences. This connects to memory, perception, and how media shapes understanding."
+            },
+            {
+                name: "Dunning-Kruger Effect",
+                description: "People with limited knowledge in a domain often overestimate their competence, while experts may underestimate theirs. This raises questions about certainty, expertise, and the nature of knowledge."
+            },
+            {
+                name: "Anchoring Bias",
+                description: "Our judgments are influenced by initial information we receive, even when that information is arbitrary or irrelevant. This explores how context shapes knowledge production."
+            },
+            {
+                name: "Hindsight Bias",
+                description: "After an event occurs, we believe we 'knew it all along,' which affects how we evaluate historical knowledge and understand causation."
+            },
+            {
+                name: "Framing Effect",
+                description: "How information is presented significantly affects our decisions and judgments, even when the underlying facts are identical. This connects to language, perspective, and interpretation."
+            },
+            {
+                name: "Fundamental Attribution Error",
+                description: "We tend to attribute others' behavior to their character while attributing our own behavior to situational factors, relevant to human sciences and indigenous knowledge systems."
+            },
+            {
+                name: "Belief Bias",
+                description: "We judge arguments based on whether we agree with the conclusion rather than the logical validity of the reasoning. This is excellent for exploring reason as a Way of Knowing."
+            },
+            {
+                name: "Bandwagon Effect",
+                description: "We adopt beliefs or behaviors because many others do, which connects to shared knowledge, cultural perspectives, and how consensus affects truth claims."
+            },
+            {
+                name: "Selection Bias",
+                description: "When samples aren't representative of the whole population, leading to flawed conclusions. This is particularly relevant for natural sciences and human sciences methodology."
+            },
+            {
+                name: "Status Quo Bias",
+                description: "We prefer things to stay the same and resist change, even when change might be beneficial. This relates to paradigm shifts and how knowledge evolves over time."
+            },
+            {
+                name: "Sunk Cost Fallacy",
+                description: "We continue investing in something because of past investment rather than current value. This connects to how we commit to theories or knowledge frameworks."
+            },
+            {
+                name: "Bias Blind Spot",
+                description: "We recognize biases in others more easily than in ourselves. This is meta-cognitively important for TOK students examining their own knowledge production."
+            },
+            {
+                name: "In-group Bias",
+                description: "We favor members of our own group over outsiders, relevant for indigenous knowledge systems, ethics, and how cultural context shapes knowledge."
+            },
+            {
+                name: "Recency Bias",
+                description: "We give more weight to recent events or information, which affects historical knowledge and how we evaluate evidence over time."
+            },
+            {
+                name: "Stereotyping",
+                description: "We apply generalized beliefs about groups to individuals, connecting to language, culture, and the construction of knowledge about people."
+            }
+        ];
+
+        // Study Mode Variables
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Quiz Mode Variables
+        let quizQuestions = [];
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let currentMode = 'study';
+        let hasAnswered = false;
+        let wrongAnswers = []; // Track wrong answers
+
+        // DOM Elements
+        const flashcard = document.getElementById('flashcard');
+        const flashcardContainer = document.querySelector('.flashcard-container');
+        const biasName = document.getElementById('bias-name');
+        const biasDescription = document.getElementById('bias-description');
+        const progress = document.getElementById('progress');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const controlsDiv = document.querySelector('.controls');
+        
+        const studyModeBtn = document.getElementById('study-mode-btn');
+        const quizModeBtn = document.getElementById('quiz-mode-btn');
+        const quizContainer = document.getElementById('quiz-container');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizOptions = document.getElementById('quiz-options');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const quizNextBtn = document.getElementById('quiz-next-btn');
+        const quizScoreDiv = document.getElementById('quiz-score');
+        const wrongAnswersList = document.getElementById('wrong-answers-list');
+
+        // Study Mode Functions
+        function updateCard() {
+            biasName.textContent = biases[currentIndex].name;
+            biasDescription.textContent = biases[currentIndex].description;
+            progress.textContent = `Card ${currentIndex + 1} of ${biases.length}`;
+            
+            if (isFlipped) {
+                flashcard.classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+
+        function flipCard() {
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % biases.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + biases.length) % biases.length;
+            updateCard();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function shuffleCards() {
+            shuffleArray(biases);
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Quiz Mode Functions
+        function generateQuizQuestions(retestMode = false) {
+            quizQuestions = [];
+            let biasesToUse = retestMode ? wrongAnswers : [...biases];
+            
+            if (!retestMode) {
+                shuffleArray(biasesToUse);
+                wrongAnswers = []; // Reset wrong answers for new full quiz
+            }
+
+            biasesToUse.forEach((bias, index) => {
+                const wrongOptions = biases
+                    .filter(b => b.name !== bias.name)
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 3)
+                    .map(b => b.name);
+                
+                const allOptions = [bias.name, ...wrongOptions];
+                shuffleArray(allOptions);
+
+                quizQuestions.push({
+                    description: bias.description,
+                    correctAnswer: bias.name,
+                    options: allOptions,
+                    biasObject: bias // Store full bias object for later reference
+                });
+            });
+
+            currentQuizIndex = 0;
+            quizScore = 0;
+            hasAnswered = false;
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                showQuizResults();
+                return;
+            }
+
+            const question = quizQuestions[currentQuizIndex];
+            quizQuestion.textContent = question.description;
+            quizOptions.innerHTML = '';
+            quizFeedback.style.display = 'none';
+            quizNextBtn.style.display = 'none';
+            hasAnswered = false;
+
+            question.options.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option';
+                optionDiv.textContent = option;
+                optionDiv.addEventListener('click', () => selectAnswer(option, question.correctAnswer));
+                quizOptions.appendChild(optionDiv);
+            });
+
+            progress.textContent = `Question ${currentQuizIndex + 1} of ${quizQuestions.length}`;
+            quizScoreDiv.textContent = `Score: ${quizScore}/${currentQuizIndex}`;
+        }
+
+        function selectAnswer(selected, correct) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+
+            const currentQuestion = quizQuestions[currentQuizIndex];
+            const options = quizOptions.querySelectorAll('.quiz-option');
+            options.forEach(option => {
+                option.classList.add('disabled');
+                if (option.textContent === correct) {
+                    option.classList.add('correct');
+                }
+                if (option.textContent === selected && selected !== correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+
+            if (selected === correct) {
+                quizScore++;
+                quizFeedback.textContent = '✓ Correct! Well done!';
+                quizFeedback.className = 'quiz-feedback correct';
+            } else {
+                quizFeedback.textContent = `✗ Incorrect. The correct answer is: ${correct}`;
+                quizFeedback.className = 'quiz-feedback incorrect';
+                
+                // Track wrong answer
+                if (!wrongAnswers.find(b => b.name === currentQuestion.biasObject.name)) {
+                    wrongAnswers.push(currentQuestion.biasObject);
+                }
+            }
+
+            quizFeedback.style.display = 'block';
+            quizNextBtn.style.display = 'block';
+            quizScoreDiv.textContent = `Score: ${quizScore}/${currentQuizIndex + 1}`;
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            displayQuizQuestion();
+        }
+
+        function showQuizResults() {
+            const percentage = Math.round((quizScore / quizQuestions.length) * 100);
+            quizQuestion.textContent = `Quiz Complete! 🎉`;
+            quizOptions.innerHTML = `
+                <div style="text-align: center; font-size: 1.2rem; margin: 20px 0;">
+                    <p style="font-size: 2rem; margin-bottom: 10px;">Your Score: ${quizScore}/${quizQuestions.length}</p>
+                    <p style="font-size: 1.5rem; color: #667eea;">${percentage}%</p>
+                </div>
+            `;
+            quizFeedback.style.display = 'none';
+            
+            // Display wrong answers if any
+            if (wrongAnswers.length > 0) {
+                wrongAnswersList.innerHTML = `
+                    <div class="wrong-answers-section">
+                        <div class="wrong-answers-title">📝 Review These Biases (${wrongAnswers.length} incorrect)</div>
+                        ${wrongAnswers.map(bias => `
+                            <div class="wrong-answer-item">
+                                <div class="wrong-answer-name">${bias.name}</div>
+                                <div class="wrong-answer-description">${bias.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="retest-btn" id="retest-btn">📝 Retest on Wrong Answers Only</button>
+                `;
+                
+                // Add event listener for retest button
+                document.getElementById('retest-btn').addEventListener('click', startRetest);
+            } else {
+                wrongAnswersList.innerHTML = `
+                    <div class="perfect-score-message">
+                        🌟 Perfect Score! You know all the biases! 🌟
+                    </div>
+                `;
+            }
+            
+            quizNextBtn.textContent = 'Start New Full Quiz';
+            quizNextBtn.style.display = 'block';
+            quizNextBtn.onclick = () => {
+                wrongAnswersList.innerHTML = ''; // Clear wrong answers list
+                quizNextBtn.textContent = 'Next Question';
+                quizNextBtn.onclick = nextQuizQuestion;
+                generateQuizQuestions(false);
+                displayQuizQuestion();
+            };
+            progress.textContent = '';
+        }
+
+        function startRetest() {
+            wrongAnswersList.innerHTML = ''; // Clear wrong answers list
+            quizNextBtn.textContent = 'Next Question';
+            quizNextBtn.onclick = nextQuizQuestion;
+            generateQuizQuestions(true); // true = retest mode
+            displayQuizQuestion();
+        }
+
+        // Mode Switching
+        function switchToStudyMode() {
+            currentMode = 'study';
+            studyModeBtn.classList.add('active');
+            quizModeBtn.classList.remove('active');
+            flashcardContainer.style.display = 'block';
+            quizContainer.classList.remove('active');
+            controlsDiv.style.display = 'flex';
+            progress.style.display = 'block';
+            quizScoreDiv.style.display = 'none';
+            updateCard();
+        }
+
+        function switchToQuizMode() {
+            currentMode = 'quiz';
+            quizModeBtn.classList.add('active');
+            studyModeBtn.classList.remove('active');
+            flashcardContainer.style.display = 'none';
+            quizContainer.classList.add('active');
+            controlsDiv.style.display = 'none';
+            progress.style.display = 'block';
+            quizScoreDiv.style.display = 'block';
+            generateQuizQuestions();
+            displayQuizQuestion();
+        }
+
+        // Event Listeners
+        flashcard.addEventListener('click', flipCard);
+        nextBtn.addEventListener('click', nextCard);
+        prevBtn.addEventListener('click', prevCard);
+        shuffleBtn.addEventListener('click', shuffleCards);
+        studyModeBtn.addEventListener('click', switchToStudyMode);
+        quizModeBtn.addEventListener('click', switchToQuizMode);
+        quizNextBtn.addEventListener('click', nextQuizQuestion);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (currentMode === 'study') {
+                if (e.key === 'ArrowRight') nextCard();
+                if (e.key === 'ArrowLeft') prevCard();
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    flipCard();
+                }
+            }
+        });
+
+        // Initialize
+        updateCard();
+    </script>
+</body>
+</html>
